@@ -1,0 +1,47 @@
+import java.util.concurrent.CopyOnWriteArrayList
+
+plugins {
+	id 'org.springframework.boot' version '2.3.4.RELEASE'
+	id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+	id 'java'
+	id 'war'
+}
+
+group = 'it.leobia'
+version = 'v.0.0.0'
+sourceCompatibility = '11'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+tasks.register('processFrontendResources', Copy) {
+	// Directory containing the artifacts in the frontend project
+	def frontendBuildDir = file("../frontend/dist")
+
+	// Directory where the frontend artifacts must be copied to be packaged alltogether with the backend by the 'war'
+	// plugin.
+	def frontendResourcesDir = file("${project.buildDir}/resources/main/public")
+	group 'Frontend'
+	description 'Process frontend resources'
+	dependsOn project(':frontend').tasks.named('assembleFrontend')
+
+	from frontendBuildDir
+	into frontendResourcesDir
+}
+
+tasks.named('processResources') {
+	dependsOn tasks.named('processFrontendResources')
+}

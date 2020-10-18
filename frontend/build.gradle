@@ -1,0 +1,26 @@
+plugins {
+    id 'org.siouan.frontend-jdk11'
+}
+
+loadProperties()
+
+def loadProperties() {
+    def environment = hasProperty('env') ? env : 'dev'
+    println "Current Environment: " + environment
+
+    def configFile = file('../config.groovy')
+    def config = new ConfigSlurper(environment).parse(configFile.toURI().toURL())
+    project.ext.config = config
+}
+
+task printProperties {
+    println "serverName:  $config.assembleScript"
+}
+
+frontend {
+    nodeVersion = '12.16.3'
+    installScript = 'install'
+    assembleScript = "$config.assembleScript"
+    cleanScript = 'run clean'
+    checkScript = 'run lint'
+}
